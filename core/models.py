@@ -28,8 +28,8 @@ class UserProfile(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
     )
     bio = models.TextField(max_length=500, blank=True)
-    genre = models.CharField(max_length=4, choices=GENRE_CHOICES, blank=True)
-    fav_author = models.CharField(max_length=100, blank=True)
+    genre = models.CharField(max_length=4, choices=GENRE_CHOICES)
+    fav_author = models.CharField(max_length=100)
 
 
 class Books(models.Model):

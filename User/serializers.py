@@ -7,14 +7,7 @@ from User.models import NewUser
 class NewUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewUser
-        fields = (
-            "id",
-            "email",
-            "user_name",
-            "password",
-            "first_name",
-            "last_name",
-        )
+        fields = ("email", "user_name", "first_name", "last_name", "password")
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, data):
@@ -28,7 +21,7 @@ class NewUserSerializer(serializers.ModelSerializer):
         validated_data["is_active"] = True
         validated_data["is_staff"] = False
         NewUser.objects.create_user(**validated_data)
-        return {"msg": "User created successfully"}
+        return validated_data
 
 
 class UserLoginSerializer(serializers.Serializer):
