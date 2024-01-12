@@ -13,3 +13,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "fav_author",
             "user",
         ]
+
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Books
+        fields = [
+            "id",
+            "title",
+            "author",
+            "genre",
+            "user",
+        ]
