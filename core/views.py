@@ -1,10 +1,11 @@
-import os
+import json
+import time
+
+from django.contrib.auth import get_user_model
 from rest_framework import generics, views
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
-import openai
-
 from core.models import Books, UserProfile
 from core.serializers import UserProfileSerializer, BookSerializer
 import core.utils as utils
@@ -36,9 +37,6 @@ class AddBookView(generics.CreateAPIView):
         return self.create(request, *args, **kwargs)
 
 
-PROMPT = "Only return the json object and nothing else Recommend me 4 books on the basis of these factors: bio  = {}, genre = {}, fav_author = {} and return it in a json format with the following keys: title, author, genre"
-
-
 class RecommendationView(views.APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication, SessionAuthentication]
@@ -49,22 +47,41 @@ class RecommendationView(views.APIView):
         bio = user.bio
         genre = user.genre
         fav_author = user.fav_author
-        prompt = PROMPT.format(bio, genre, fav_author)
-        openai.api_key = os.environ.get("API_KEY")
-        response = openai.Completion.create(
-            engine="davinci",
-            prompt=prompt,
-            temperature=0.3,
-            max_tokens=60,
-            top_p=1.0,
-            frequency_penalty=0.0,
-            presence_penalty=0.0,
-            stop=["\n"],
-        )
-        data = response.choices[0].text.split("\n")
-        data["user"] = user_id
-        serializer = BookSerializer(data=data, many=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
 
-        return Response({"detail": response.choices[0].text}, status=200)
+        max_retries = 3
+        retry_delay_seconds = 1
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                response = utils.get_recommendation(bio, genre, fav_author)
+                response = json.loads(response)
+                data = response.copy()
+
+                for book in data["books"]:
+                    book["user"] = user_id
+                    serializer = BookSerializer(data=book)
+                    if serializer.is_valid():
+                        serializer.save()
+
+                return Response(response, status=200)
+
+            except Exception as e:
+                print(f"Attempt {attempt} failed. Retrying...")
+                time.sleep(retry_delay_seconds)
+
+        return Response(
+            {"error": "Max retries reached. Unable to process the request."}, status=500
+        )
+
+
+class GetBooks(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    queryset = Books.objects.all()
+    serializer_class = BookSerializer
+    http_method_names = ["get"]
+
+    def get(self, request):
+        user_id = utils.get_user_id_from_token(request)
+        user = get_user_model(pk=user_id)
+        books = user.books
