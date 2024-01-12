@@ -4,12 +4,12 @@ import os
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status
+from core.models import Books
 
 import openai
 
 load_dotenv()
 API_KEY = os.environ.get("OPENAI_API_KEY")
-print(API_KEY)
 openai.api_key = API_KEY
 
 PROMPT = "Only return the json object and nothing else I don't want any other text other than json Recommend me 4 books on the basis of these factors: bio  = {}, genre = {}, fav_author = {} and return it in a json format with the following keys: title, author, genre"
@@ -39,3 +39,7 @@ def get_user_id_from_token(request):
         return Response(
             {"detail": "Token not found."}, status=status.HTTP_401_UNAUTHORIZED
         )
+
+
+def book_count(user_id) -> int:
+    return len(Books.objects.filter(user=user_id))

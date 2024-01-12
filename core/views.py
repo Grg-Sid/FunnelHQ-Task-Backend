@@ -41,8 +41,13 @@ class RecommendationView(views.APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication, SessionAuthentication]
 
-    def post(self, request):
+    def get(self, request):
         user_id = utils.get_user_id_from_token(request)
+        if utils.book_count(user_id) >= 4:
+            books = Books.objects.filter(user_id=user_id)[:4]
+            serializer = BookSerializer(books, many=True)
+            return Response({"books": serializer.data}, status=200)
+
         user = UserProfile.objects.get(user=user_id)
         bio = user.bio
         genre = user.genre
@@ -72,16 +77,3 @@ class RecommendationView(views.APIView):
         return Response(
             {"error": "Max retries reached. Unable to process the request."}, status=500
         )
-
-
-class GetBooks(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication, SessionAuthentication]
-    queryset = Books.objects.all()
-    serializer_class = BookSerializer
-    http_method_names = ["get"]
-
-    def get(self, request):
-        user_id = utils.get_user_id_from_token(request)
-        user = get_user_model(pk=user_id)
-        books = user.books
