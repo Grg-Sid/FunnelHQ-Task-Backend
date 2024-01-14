@@ -20,36 +20,44 @@
 
 ### 5. Get Request to Recommend Books.
 ![6](https://github.com/Grg-Sid/FunnelHQ-Task-Backend/assets/106266279/743e86f4-db29-4b5f-8670-46c58382f32c)
-## Setting Up
 
-- Clone the repositiory
-- Create a python virtual environment and activate it
-  <br>
-  ```shell
-  python3 -m venv .venv
-  source .venv/bin/activate
-  ```
-- Give write access to the setup.sh file
-  <br>
-  ```shell
-  chmod +x setup.sh
-  ```
-- Run setup.sh to install the required packages and set the appropriate paths
-  <br>
-  ```shell
-  ./setup.sh
-  ```
+## Local Setup
 
-- Run the migrate command
-  ```shell
-  python manage.py migrate
-  ```
+1. Clone the repository:
 
-- Run the backend server on localhost:
+```CMD
+git clone https://github.com/Grg-Sid/Alemeno-task.git
+```
 
-  ```shell
-  python manage.py runserver
-  ```
+2. Install, Create and activate a virtual environment:
+
+```CMD
+python3 -m venv .venv
+```
+
+Activate the virtual environment
+
+```CMD
+source .venv/bin/activate
+```
+
+3. Install the dependencies:
+
+```CMD
+pip install -r requirements.txt
+```
+
+5.Run the migrate command
+
+```CMD
+python manage.py migrate
+```
+
+6. Run the backend server on localhost:
+
+```CMD
+python manage.py runserver
+```
 
 You can access the endpoints from your web browser following this url
 
